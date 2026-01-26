@@ -21,6 +21,7 @@ class ResourceResults extends HTMLElement {
   // Example: #isLoading = false; #error = null;
   #results = [];
   #isLoading = false;
+  #error = null;
   #filteredResults = [];
   #filters = {
     query: '',
@@ -73,15 +74,18 @@ class ResourceResults extends HTMLElement {
 
   async #fetchData(source) {
     try {
-      this.#isLoading = true;
+      this.#isLoading = true; // for the excercise
       const response = await fetch(source);
       if (!response.ok) {
         throw new Error(`Network problem: ${response.statusTest}`);
       }
       const resultData = await response.json();
       this.results = resultData;
-      this.#isLoading = false;
+      this.#error = null;
+      this.#isLoading = false; // for the excercise
     } catch (erorr) {
+      this.#error = erorr;
+      this.#isLoading = false;
       console.error('Failed to fetch data', erorr);
     }
     const response = await fetch(source);
