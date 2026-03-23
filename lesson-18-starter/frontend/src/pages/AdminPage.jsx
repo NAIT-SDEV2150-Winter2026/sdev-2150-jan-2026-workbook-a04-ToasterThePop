@@ -1,0 +1,149 @@
+import { useState } from 'react';
+
+import { useResources } from '../hooks/useResources';
+import Card from '../components/ui/Card';
+
+import{ useState, useEffect } from 'react'
+
+import { useNavigate, useParams } from 'react-router';
+
+export default function AdminPage() {
+  const [formData, setFormData] = useState({
+    title: 'Study Group',
+    category: 'Wellness',
+    summary: 'Some summary of the resource.',
+    location: 'NAIT Campus',
+    hours: 'Mon-Fri 08:00-13:00',
+    contact: 'study@nait.ca',
+    virtual: false,
+    openNow: false,
+  });
+
+  const { resources, addResource, isLoading, error, refetch } = useResources();
+
+  async function handleCreateResource(e, formData) {
+    e.preventDefault();
+
+    // Added as student exercise solution
+    addResource(formData);
+  }
+
+  const { resourceId } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!resourceId) {
+      setFormData({
+        title: '',
+        category: '',
+        summary: '',
+        location: '',
+        hours: '',
+        contact: '',
+        virtual: false,
+        openNow: false,
+      });
+      return;
+    }
+
+    const resource = resources.find((item) => item.id === resourceId);
+
+    if (!resource) return;
+
+    setFormData({
+      title: resource.title,
+      category: resource.category,
+      summary: resource.summary,
+      location: resource.location,
+      hours: resource.hours,
+      contact: resource.contact,
+      virtual: resource.virtual,
+      openNow: resource.openNow,
+    });
+  }, [resourceId, resources]);
+
+
+  return (
+    <>
+      <div>
+        <h1 className="text-2xl font-bold">Admin</h1>
+        <p className="text-sm text-base-content/70">
+          Manage student resources.
+        </p>
+      </div>
+
+      {isLoading && <p>Loading resources...</p>}
+
+      {error && (
+        <div className="alert alert-error">
+          <span>{error.message}</span>
+          <button className="btn btn-sm" onClick={refetch}>Try again</button>
+        </div>
+      )}
+
+      <section className="md:col-span-3 lg:col-span-3">
+        <Card title="Resource Form">
+          <div className="card-body">
+            <form onSubmit={handleCreateResource} id="frm-add-resource" className="space-y-4">
+              <div className="space-y-1">
+                <label htmlFor="Title" className="block text-sm font-medium text-gray-700">
+                  Title
+                </label>
+                <input
+                  id="Title"
+                  type="text"
+                  className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Resource title"
+                />
+              </div>
+
+              <hr className="border-gray-200" />
+
+              <div className="flex gap-2">
+                <button
+                  type="reset"
+                  className="rounded border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  onClick={() => setFormData({
+                    title: '',
+                    category: '',
+                    summary: '',
+                    location: '',
+                    hours: '',
+                    contact: '',
+                    virtual: false,
+                    openNow: false,
+                  })}
+                >
+                  Reset
+                </button>
+                <button
+                  type="submit"
+                  className="rounded bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700"
+                >
+                  Add Resource
+                </button>
+              </div>
+            </form>
+          </div>
+        </Card>
+      </section>
+
+      <section className="md:col-span-3 lg:col-span-3">
+        <Card title="Current Resources">
+          <div className="card-body">
+            <ul className="space-y-2">
+              {resources.map((resource) => (
+                <li key={resource.id} className="rounded border border-gray-200 p-3 ">
+                  <p className="font-semibold">{resource.title}</p>
+                  <p className="text-sm text-base-content/70">{resource.category}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Card>
+      </section>
+    </>
+  );
+};
